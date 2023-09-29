@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -28,25 +29,26 @@ type Player struct {
 }
 
 func newPlayer(x float64, y float64, imgFile string) *Player {
-	img, _, err := ebitenutil.NewImageFromFile("./assets/mori_jump1.png")
+	img, _, err := ebitenutil.NewImageFromFile("../assets/mori_jump1.png")
 	if err != nil {
 		log.Fatal(err)
 	}
 	keys := []ebiten.Key{}
-	var ms float64 = 1.5
+	var ms float64 = 1.7
 	p := Player{x, y, img, keys, 0, 0, ms}
 	return &p
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(p.translateX, p.translateY)
+	op.GeoM.Translate(math.Floor(p.translateX), math.Floor(p.translateY))
 	screen.DrawImage(p.sprite, op)
 }
 
 func (p *Player) Step() {
 
 	p.keys = inpututil.AppendPressedKeys(p.keys)
+
 	rightdir := 0
 	leftdir := 0
 	if contains(p.keys, ebiten.KeyArrowRight) {
@@ -57,9 +59,13 @@ func (p *Player) Step() {
 	}
 	//left and right movement
 	p.dir = rightdir + leftdir
-	p.hspeed = float64(p.dir) * p.moveSpeed
-
+	targetSpeed := float64(p.dir) * p.moveSpeed
+	if p.hspeed != targetSpeed {
+		p.hspeed = targetSpeed
+	}
 	p.translateX += p.hspeed
+
+	//fmt.Println(p.translateX)
 	p.hspeed = 0
 	rightdir = 0
 	leftdir = 0
