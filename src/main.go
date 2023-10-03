@@ -49,6 +49,7 @@ func init() {
 
 	for _, tile := range gameMap.Layers[0].Tiles {
 		if tile.Nil == false {
+			//xfmt.Println(gameMap.Layers[0].Name)
 			spriteRect := tile.Tileset.GetTileRect(tile.ID)
 			tileImage := tilesImage.SubImage(spriteRect).(*ebiten.Image)
 			m[tile.ID] = tileImage
@@ -67,7 +68,7 @@ type Game struct {
 func (g *Game) Update() error {
 	g.p.Step()
 
-	g.camera.Target(g.p.translateX+float64(g.p.sprite.Bounds().Dx())/2, g.p.translateY+float64(g.p.sprite.Bounds().Dy())/2)
+	g.camera.Target(g.p.translateX+float64(g.p.sprite.imgWidth/2), g.p.translateY+float64(g.p.sprite.imgHeight)/2)
 	fmt.Println(g.camera.String())
 	return nil
 }
