@@ -18,11 +18,12 @@ type Player struct {
 	translateX float64
 	translateY float64
 	//sprite     *ebiten.Image
-	keys      []ebiten.Key
-	hspeed    float64
-	dir       int
-	moveSpeed float64
-	sprite    *Sprite
+	keys          []ebiten.Key
+	hspeed        float64
+	dir           int
+	moveSpeed     float64
+	currentSprite *Sprite
+	Sprites       map[string]*Sprite
 }
 
 func newPlayer(x float64, y float64, imgFile string) *Player {
@@ -33,7 +34,9 @@ func newPlayer(x float64, y float64, imgFile string) *Player {
 	keys := []ebiten.Key{}
 	var ms float64 = 1.7
 	s := newSprite("../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle")
-	p := Player{x, y, keys, 0, 0, ms, s}
+	m := make(map[string]*Sprite)
+	m[s.name] = s
+	p := Player{x, y, keys, 0, 0, ms, s, m}
 	return &p
 }
 
@@ -41,11 +44,12 @@ func (p *Player) Draw(screen *ebiten.Image) {
 	//op := &ebiten.DrawImageOptions{}
 	//op.GeoM.Translate(math.Floor(p.translateX), math.Floor(p.translateY))
 	//screen.DrawImage(p.sprite, op)
-	p.sprite.draw(screen, p.translateX, p.translateY)
+	p.currentSprite.draw(screen, p.translateX, p.translateY)
 }
 
 func (p *Player) Step() {
-	p.sprite.step()
+	p.currentSprite = p.Sprites["mori_idle"]
+	p.currentSprite.step()
 	p.keys = inpututil.AppendPressedKeys(p.keys)
 
 	rightdir := 0
