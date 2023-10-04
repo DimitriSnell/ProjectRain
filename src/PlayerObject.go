@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"golang.org/x/image/math/f64"
 )
 
 func contains(s []ebiten.Key, e ebiten.Key) bool {
@@ -24,19 +25,21 @@ type Player struct {
 	moveSpeed     float64
 	currentSprite *Sprite
 	Sprites       map[string]*Sprite
+	subPixelX     float64
+	subPixelY     float64
 }
 
-func newPlayer(x float64, y float64, imgFile string) *Player {
+func newPlayer(x float64, y float64) *Player {
 	//img, _, err := ebitenutil.NewImageFromFile("../assets/mori_jump1.png")
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
 	keys := []ebiten.Key{}
-	var ms float64 = 1.7
-	s := newSprite("../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle")
+	var ms float64 = 2
+	s := newSprite("../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle", f64.Vec2{-31, -23}, f64.Vec2{-40, -48})
 	m := make(map[string]*Sprite)
 	m[s.name] = s
-	p := Player{x, y, keys, 0, 0, ms, s, m}
+	p := Player{x, y, keys, 0, 0, ms, s, m, 0, 0}
 	return &p
 }
 
@@ -60,12 +63,16 @@ func (p *Player) Step() {
 	if contains(p.keys, ebiten.KeyArrowLeft) {
 		leftdir = -1
 	}
+
 	//left and right movement
 	p.dir = rightdir + leftdir
 	targetSpeed := float64(p.dir) * p.moveSpeed
-	if p.hspeed != targetSpeed {
-		p.hspeed = targetSpeed
-	}
+	p.hspeed = targetSpeed
+
+	integerPart := int(p.hspeed)
+	fractionalPart := p.hspeed - float64(integerPart)
+	p.subPixelX += fractionalPart
+
 	p.translateX += p.hspeed
 
 	//fmt.Println(p.translateX)

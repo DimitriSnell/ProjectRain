@@ -11,13 +11,12 @@ import (
 	"golang.org/x/image/math/f64"
 )
 
-var imgTranslateX float64
-var imgTranslateY float64
-var p Player
+// var p entity
 var entityList []entity
 
 const mapPath = "../tiles/maps/keepers_forest/keepers_1.tmx"
 
+var globalUIDCounter uint32 = 0
 var m []map[uint32]*ebiten.Image
 var scene *tiled.Map
 var screenWidth = 960
@@ -25,10 +24,8 @@ var screenHeight = 530
 
 func init() {
 
-	imgTranslateX = 0
-	imgTranslateY = 0
-	p = *newPlayer(0, 0, "./assets/mori_jump1.png")
-	entityList = append(entityList, &p)
+	p := creatEntity("Player", 0, 0, 0)
+	entityList = append(entityList, p)
 
 	gameMap, err := tiled.LoadFile(mapPath)
 	if err != nil {
@@ -37,7 +34,6 @@ func init() {
 	}
 	scene = gameMap
 	//fmt.Println(gameMap.ImageLayers[0])
-	fmt.Println("test")
 
 	//populate map of images
 	layerImageNames := make(map[int]string)
@@ -69,27 +65,25 @@ func init() {
 		}
 	}
 
-	p.translateX = 700
-	p.translateY = 2300
 }
 
 type Game struct {
-	p      Player
 	world  *ebiten.Image
 	camera Camera
 }
 
 func (g *Game) Update() error {
-	g.p.Step()
-
-	g.camera.Target(g.p.translateX+float64(g.p.currentSprite.imgWidth/2), g.p.translateY+float64(g.p.currentSprite.imgHeight)/2)
-	fmt.Println(ebiten.CurrentTPS())
+	for _, entity := range entityList {
+		entity.Step()
+	}
+	g.camera.Target()
+	//fmt.Println(ebiten.CurrentTPS())
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, "Hello, World")
-	g.world.Fill(color.RGBA{173, 219, 198, 0xff})
+	g.world.Fill(color.RGBA{149, 209, 197, 0xff})
 	for c, layer := range scene.Layers {
 		for i, tile := range layer.Tiles {
 			if tile.Nil == false {
@@ -108,7 +102,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	//worldX, worldY := g.camera.ScreenToWorld(ebiten.CursorPosition())
-	g.p.Draw(g.world)
+	for _, entity := range entityList {
+		entity.Draw(g.world)
+	}
 	g.camera.Render(g.world, screen)
 	//ebitenutil.DebugPrint(screen, ebiten.CurrentTPS())
 	g.world.Clear()
@@ -123,8 +119,16 @@ func main() {
 	ebiten.SetWindowTitle("Hello, World!")
 	//w := ebiten.NewImage(scene.Width, scene.Height)
 	c := Camera{ViewPort: f64.Vec2{float64(screenWidth), float64(screenHeight)}}
+	fmt.Println(len(entityList))
+	for _, e := range entityList {
+		//fmt.Println("TESTETSETESTESTE")
+		fmt.Printf("Type: %T\n", e)
+		if player, ok := e.(*Player); ok {
+			c.target = player
+		}
+	}
+
 	g := &Game{camera: c}
-	g.p = p
 	g.world = ebiten.NewImage(scene.Width*scene.TileWidth, scene.Height*scene.TileHeight)
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)

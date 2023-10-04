@@ -14,6 +14,7 @@ type Camera struct {
 	Position   f64.Vec2
 	ZoomFactor int
 	Rotation   int
+	target     *Player
 }
 
 func (c *Camera) String() string {
@@ -62,7 +63,7 @@ func (c *Camera) ScreenToWorld(posX, posY int) (float64, float64) {
 	}
 }
 
-func (c *Camera) Target(posX, posY float64) {
-	c.Position[0] = math.Floor(posX - (c.ViewPort[0] / 2))
-	c.Position[1] = math.Floor(posY - (c.ViewPort[1] / 2))
+func (c *Camera) Target() {
+	c.Position[0] = math.Floor(c.target.translateX + float64(c.target.currentSprite.imgWidth/2) - (c.ViewPort[0] / 2))
+	c.Position[1] = math.Floor(c.target.translateY + float64(c.target.currentSprite.imgHeight)/2 - (c.ViewPort[1] / 2))
 }
