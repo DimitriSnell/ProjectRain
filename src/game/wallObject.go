@@ -33,3 +33,11 @@ func (w *Wall) GetPosition() (x float64, y float64) {
 func (w *Wall) GetCurrentSprite() *Sprite {
 	return w.sprite
 }
+
+func (w *Wall) getHspeed() float64 {
+	return 0
+}
+
+func (w *Wall) getVspeed() float64 {
+	return 0
+}

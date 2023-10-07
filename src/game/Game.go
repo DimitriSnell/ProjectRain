@@ -20,7 +20,7 @@ type Game struct {
 	M      []map[uint32]*ebiten.Image
 }
 
-func (g *Game) CreateEntityLayer(entityC EntityConstructor, layer int, x, y float64) {
+func CreateEntityLayer(entityC EntityConstructor, layer int, x, y float64) {
 
 	result := entityC(x, y)
 

@@ -9,6 +9,8 @@ type Entity interface {
 	Step()
 	GetPosition() (x float64, y float64)
 	GetCurrentSprite() *Sprite
+	getHspeed() float64
+	getVspeed() float64
 }
 type EntityConstructor func(x, y float64) Entity
 

@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -84,13 +83,13 @@ func (s *Sprite) Draw(img *ebiten.Image, x, y float64) {
 	i := (s.count / int(s.framesPerSecond)) % int(s.numOfFrames)
 	//fmt.Println(i)
 	sx, sy := i*int(s.ImgWidth), 0
-	minPointX := x + s.boundingBox.min[0]
-	minPointY := y + s.boundingBox.min[1]
-	maxPointX := x + s.boundingBox.max[0]
-	maxPointY := y + s.boundingBox.max[1]
-	fmt.Println(x, y)
-	fmt.Println(s.boundingBox.min, s.boundingBox.max)
-	fmt.Println(minPointX, minPointY, maxPointX, maxPointY)
+	minPointX := math.Floor(x) + s.boundingBox.min[0]
+	minPointY := math.Floor(y) + s.boundingBox.min[1]
+	maxPointX := math.Floor(x) + s.boundingBox.max[0]
+	maxPointY := math.Floor(y) + s.boundingBox.max[1]
+	//fmt.Println(x, y)
+	//fmt.Println(s.boundingBox.min, s.boundingBox.max)
+	//fmt.Println(minPointX, minPointY, maxPointX, maxPointY)
 	//vector.DrawFilledRect(img, float32(minPointX), float32(minPointY), float32(maxPointX), float32(maxPointY), color.RGBA{255, 0, 0, 0xff}, false)
 	//ebitenutil.DrawRect(img, minPointX, minPointY, maxPointX, maxPointY, color.RGBA{255, 0, 0, 0xff})
 	if s.img != nil {

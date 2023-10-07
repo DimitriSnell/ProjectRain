@@ -44,6 +44,12 @@ func init() {
 	layerImageNames[6] = "Keepers_forest_1.png"
 	layerImageNames[7] = "Keepers_forest_7.png"
 	for i, _ := range gameMap.Layers {
+		if gameMap.Layers[i].Name == "オブジェクトレイヤー1" {
+			for _, object := range gameMap.Layers[i].Tiles {
+				fmt.Println(gameMap.Layers[i].GetTilePosition(int(object.ID)))
+			}
+			break
+		}
 		temp := make(map[uint32]*ebiten.Image)
 		m = append(m, temp)
 		fmt.Println(gameMap.Layers[i].Name)
@@ -62,7 +68,11 @@ func init() {
 			}
 		}
 	}
-
+	for _, groups := range gameMap.ObjectGroups {
+		for _, object := range groups.Objects {
+			game.CreateEntityLayer(game.NewWall, 0, object.X, object.Y)
+		}
+	}
 }
 
 func main() {
@@ -71,8 +81,8 @@ func main() {
 	//w := ebiten.NewImage(scene.Width, scene.Height)
 	c := game.Camera{ViewPort: f64.Vec2{float64(screenWidth), float64(screenHeight)}}
 	g := &game.Game{}
-	g.CreateEntityLayer(game.NewPlayer, 0, 0, 0)
-	g.CreateEntityLayer(game.NewWall, 0, 20, 20)
+	game.CreateEntityLayer(game.NewPlayer, 0, 100, 20)
+	game.CreateEntityLayer(game.NewWall, 0, 20, 20)
 	fmt.Println(len(game.EntityList))
 	for _, e := range game.EntityList {
 		//fmt.Println("TESTETSETESTESTE")
