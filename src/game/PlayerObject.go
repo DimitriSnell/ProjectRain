@@ -33,9 +33,10 @@ type Player struct {
 	subPixelX     float64
 	subPixelY     float64
 	gravity       float32
+	UID           int
 }
 
-func NewPlayer(x float64, y float64) Entity {
+func NewPlayer(x float64, y float64, UID int) Entity {
 	//img, _, err := ebitenutil.NewImageFromFile("../assets/mori_jump1.png")
 	//if err != nil {
 	//	log.Fatal(err)
@@ -47,7 +48,7 @@ func NewPlayer(x float64, y float64) Entity {
 	m[s.Name] = s
 	//m[] = s
 	gv := .2
-	p := Player{x, y, keys, 0, 0, 0, ms, s, m, 0, 0, float32(gv)}
+	p := Player{x, y, keys, 0, 0, 0, ms, s, m, 0, 0, float32(gv), UID}
 	return &p
 }
 
@@ -127,4 +128,9 @@ func (p *Player) playerWallCollision() {
 		}
 		p.vspeed = 0
 	}
+}
+
+func (p *Player) getUID() int {
+
+	return p.UID
 }

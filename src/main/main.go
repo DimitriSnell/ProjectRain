@@ -6,7 +6,6 @@ import (
 
 	game "github.com/DimitriSnell/goTest/src/game"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/lafriks/go-tiled"
 	"golang.org/x/image/math/f64"
 )
@@ -33,41 +32,6 @@ func init() {
 	scene = gameMap
 	//fmt.Println(gameMap.ImageLayers[0])
 
-	//populate map of images
-	layerImageNames := make(map[int]string)
-	layerImageNames[0] = "Keeper_forest_4.png"
-	layerImageNames[1] = "Keepers_forest_9.png"
-	layerImageNames[2] = "Keeper_forst_3.png"
-	layerImageNames[3] = "Keepers_forest_8.png"
-	layerImageNames[4] = "Keepers_forest_2.png"
-	layerImageNames[5] = "Keeper_forest_6.png"
-	layerImageNames[6] = "Keepers_forest_1.png"
-	layerImageNames[7] = "Keepers_forest_7.png"
-	for i, _ := range gameMap.Layers {
-		if gameMap.Layers[i].Name == "オブジェクトレイヤー1" {
-			for _, object := range gameMap.Layers[i].Tiles {
-				fmt.Println(gameMap.Layers[i].GetTilePosition(int(object.ID)))
-			}
-			break
-		}
-		temp := make(map[uint32]*ebiten.Image)
-		m = append(m, temp)
-		fmt.Println(gameMap.Layers[i].Name)
-		holdImg, _, err := ebitenutil.NewImageFromFile("../../tiles/tilesets/" + layerImageNames[i])
-		if err != nil {
-			log.Fatal(err)
-		}
-		tilesImage := ebiten.NewImageFromImage(holdImg)
-
-		for _, tile := range gameMap.Layers[i].Tiles {
-			if tile.Nil == false {
-				//xfmt.Println(gameMap.Layers[0].Name)
-				spriteRect := tile.Tileset.GetTileRect(tile.ID)
-				tileImage := tilesImage.SubImage(spriteRect).(*ebiten.Image)
-				m[i][tile.ID] = tileImage
-			}
-		}
-	}
 	for _, groups := range gameMap.ObjectGroups {
 		for _, object := range groups.Objects {
 			game.CreateEntityLayer(game.NewWall, 0, object.X, object.Y)
@@ -93,8 +57,8 @@ func main() {
 	}
 	g.Camera = c
 	g.World = ebiten.NewImage(scene.Width*scene.TileWidth, scene.Height*scene.TileHeight)
-	g.Scene = scene
-	g.M = m
+	g.Level = game.NewKeepersForest1()
+	//g.M = m
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}

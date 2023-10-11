@@ -11,8 +11,9 @@ type Entity interface {
 	GetCurrentSprite() *Sprite
 	getHspeed() float64
 	getVspeed() float64
+	getUID() int
 }
-type EntityConstructor func(x, y float64) Entity
+type EntityConstructor func(x, y float64, UID int) Entity
 
 /*func CreatEntity(entityC EntityConstructor, layer int, x, y float64) {
 /*var result entity
