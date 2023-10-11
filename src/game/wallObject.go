@@ -14,7 +14,7 @@ type Wall struct {
 
 func NewWall(x, y float64, UID int) Entity {
 
-	s := NewSprite("", 1, 1, 0, 0, "wall", f64.Vec2{0, 0}, f64.Vec2{32, 32})
+	s := NewSprite("", 1, 1, 0, 0, "wall", f64.Vec2{0, 0}, f64.Vec2{32, 32}, 0, 0)
 	w := Wall{x, y, s, UID}
 	return &w
 }

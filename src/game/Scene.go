@@ -17,10 +17,10 @@ type Scene struct {
 
 func (s *Scene) DrawTiles(g *Game) {
 	g.World.Fill(color.RGBA{149, 209, 197, 0xff})
-	fmt.Println("LAYER LENGTH!!!!!!!!!!!!")
-	fmt.Println(len(s.tileMap.Layers))
-	fmt.Println("MAP LENGTH!!!!!!!!!!!!")
-	fmt.Println(len(s.imageMaps))
+	//fmt.Println("LAYER LENGTH!!!!!!!!!!!!")
+	//fmt.Println(len(s.tileMap.Layers))
+	//fmt.Println("MAP LENGTH!!!!!!!!!!!!")
+	//fmt.Println(len(s.imageMaps))
 	for c, layer := range s.tileMap.Layers {
 		for i, tile := range layer.Tiles {
 			if tile.Nil == false {
@@ -28,10 +28,7 @@ func (s *Scene) DrawTiles(g *Game) {
 				if float64((i%s.tileMap.Width)*s.tileMap.TileWidth) > g.Camera.Position[0]-32 && float64((i%s.tileMap.Width)*s.tileMap.TileWidth) < g.Camera.Position[0]+g.Camera.ViewPort[0] &&
 					float64((i/s.tileMap.Width)*s.tileMap.TileHeight) > g.Camera.Position[1]-32 && float64((i/s.tileMap.Width)*s.tileMap.TileHeight) < g.Camera.Position[1]+g.Camera.ViewPort[1] {
 					op := &ebiten.DrawImageOptions{}
-					//scene.TileWidth
 					op.GeoM.Translate(float64((i%s.tileMap.Width)*s.tileMap.TileWidth), float64((i/s.tileMap.Width)*s.tileMap.TileHeight))
-					//fmt.Println(i)
-					//screen.DrawImage(m[tile.ID], op)
 					g.World.DrawImage(s.imageMaps[c][tile.ID], op)
 				}
 			}

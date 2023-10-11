@@ -45,7 +45,7 @@ func main() {
 	//w := ebiten.NewImage(scene.Width, scene.Height)
 	c := game.Camera{ViewPort: f64.Vec2{float64(screenWidth), float64(screenHeight)}}
 	g := &game.Game{}
-	game.CreateEntityLayer(game.NewPlayer, 0, 100, 20)
+	game.CreateEntityLayer(game.NewMori, 0, 100, 20)
 	game.CreateEntityLayer(game.NewWall, 0, 20, 20)
 	fmt.Println(len(game.EntityList))
 	for _, e := range game.EntityList {

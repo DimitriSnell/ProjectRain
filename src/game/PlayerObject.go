@@ -19,6 +19,13 @@ func contains(s []ebiten.Key, e ebiten.Key) bool {
 	return false
 }
 
+type PLAYERSTATE int
+
+const (
+	FREE PLAYERSTATE = iota
+	ABILITY1
+)
+
 type Player struct {
 	translateX float64
 	translateY float64
@@ -34,6 +41,7 @@ type Player struct {
 	subPixelY     float64
 	gravity       float32
 	UID           int
+	STATE         PLAYERSTATE
 }
 
 func NewPlayer(x float64, y float64, UID int) Entity {
@@ -43,12 +51,26 @@ func NewPlayer(x float64, y float64, UID int) Entity {
 	//}
 	keys := []ebiten.Key{}
 	var ms float64 = 2
-	s := NewSprite("../../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle", f64.Vec2{31, 23}, f64.Vec2{40, 48})
+	s := NewSprite("../../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
 	m := make(map[string]*Sprite)
 	m[s.Name] = s
 	//m[] = s
 	gv := .2
-	p := Player{x, y, keys, 0, 0, 0, ms, s, m, 0, 0, float32(gv), UID}
+	p := Player{x, y, keys, 0, 0, 0, ms, s, m, 0, 0, float32(gv), UID, FREE}
+	return &p
+}
+
+func NewMori(x float64, y float64, UID int) Entity {
+	keys := []ebiten.Key{}
+	var ms float64 = 2
+	s := NewSprite("../../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
+	m := make(map[string]*Sprite)
+	m[s.Name] = s
+	s2 := NewSprite("../../assets/mori_swing_1_strip10.png", 10, 4, 128, 128, "mori_ability_1", f64.Vec2{64, 54}, f64.Vec2{71, 80}, 32, 32)
+	m[s2.Name] = s2
+	//m[] = s
+	gv := .2
+	p := Player{x, y, keys, 0, 0, 0, ms, s, m, 0, 0, float32(gv), UID, FREE}
 	return &p
 }
 
@@ -60,39 +82,57 @@ func (p *Player) Draw(screen *ebiten.Image) {
 }
 
 func (p *Player) Step() {
-	p.currentSprite = p.Sprites["mori_idle"]
+	//p.currentSprite = p.Sprites["mori_idle"]
 	p.currentSprite.Step()
-	p.keys = inpututil.AppendPressedKeys(p.keys)
-
+	//p.keys = inpututil.AppendPressedKeys(p.keys)
+	if p.hspeed > 0 {
+		p.dir = 1
+	} else if p.hspeed < 0 {
+		p.dir = -1
+	}
 	rightdir := 0
 	leftdir := 0
-	if contains(p.keys, ebiten.KeyArrowRight) {
-		rightdir = 1
+	switch p.STATE {
+	case FREE:
+		p.currentSprite = p.Sprites["mori_idle"]
+		if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+			rightdir = 1
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+			leftdir = -1
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			p.vspeed = -6
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyZ) {
+			p.STATE = ABILITY1
+		}
+		targetSpeed := float64(rightdir+leftdir) * p.moveSpeed
+		p.hspeed = targetSpeed
+	case ABILITY1:
+		p.hspeed = 0
+		p.currentSprite = p.Sprites["mori_ability_1"]
+		if p.currentSprite.spriteIndex >= p.currentSprite.numOfFrames-1 {
+			p.currentSprite.count = 0
+			p.STATE = FREE
+		}
 	}
-	if contains(p.keys, ebiten.KeyArrowLeft) {
-		leftdir = -1
-	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		p.vspeed = -6
-	}
-	//placeMeeting(p, int(p.translateX), int(p.translateY), reflect.TypeOf(&Wall{}))
-	//left and right movement
-	p.dir = rightdir + leftdir
-	targetSpeed := float64(p.dir) * p.moveSpeed
-	p.hspeed = targetSpeed
 
 	p.vspeed += float64(p.gravity)
+	fmt.Println(p.dir)
 	//collision and vertical/horizontal movement
 	p.playerWallCollision()
+	if p.dir > 0 {
+		p.currentSprite.imageXScale = 1
+	} else if p.dir < 0 {
 
+		p.currentSprite.imageXScale = -1
+	}
 	p.translateX += p.hspeed
-
 	p.translateY += p.vspeed
-	p.hspeed = 0
-	rightdir = 0
-	leftdir = 0
-	p.keys = nil
+	//p.hspeed = 0
+	//rightdir = 0
+	//leftdir = 0
 }
 
 func (p *Player) GetPosition() (x float64, y float64) {
