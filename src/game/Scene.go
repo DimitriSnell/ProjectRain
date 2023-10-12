@@ -15,6 +15,10 @@ type Scene struct {
 	imageMaps []map[uint32]*ebiten.Image
 }
 
+func (s *Scene) GetTileMap() *tiled.Map {
+	return s.tileMap
+}
+
 func (s *Scene) DrawTiles(g *Game) {
 	g.World.Fill(color.RGBA{149, 209, 197, 0xff})
 	//fmt.Println("LAYER LENGTH!!!!!!!!!!!!")
@@ -34,9 +38,43 @@ func (s *Scene) DrawTiles(g *Game) {
 			}
 		}
 	}
+
 }
 
-func NewKeepersForest1() *Scene {
+func NewMainMenu1() *Scene {
+	result := Scene{}
+	result.imageMaps = make([]map[uint32]*ebiten.Image, 0)
+	gameMap, err := tiled.LoadFile("../../tiles/maps/main_menu_1.tmx")
+	if err != nil {
+		fmt.Println("ERROR:")
+		log.Fatal(err)
+	}
+	result.tileMap = gameMap
+	layerImageNames := make(map[int]string)
+	layerImageNames[0] = "Keeper_forest_4.png"
+	for i, _ := range gameMap.Layers {
+		temp := make(map[uint32]*ebiten.Image)
+		result.imageMaps = append(result.imageMaps, temp)
+		fmt.Println(gameMap.Layers[i].Name)
+		holdImg, _, err := ebitenutil.NewImageFromFile("../../tiles/tilesets/" + layerImageNames[i])
+		if err != nil {
+			log.Fatal(err)
+		}
+		tilesImage := ebiten.NewImageFromImage(holdImg)
+
+		for _, tile := range gameMap.Layers[i].Tiles {
+			if tile.Nil == false {
+				//xfmt.Println(gameMap.Layers[0].Name)
+				spriteRect := tile.Tileset.GetTileRect(tile.ID)
+				tileImage := tilesImage.SubImage(spriteRect).(*ebiten.Image)
+				result.imageMaps[i][tile.ID] = tileImage
+			}
+		}
+	}
+	return &result
+}
+
+func NewKeepersForest1(g *Game) *Scene {
 	result := Scene{}
 	result.imageMaps = make([]map[uint32]*ebiten.Image, 0)
 	gameMap, err := tiled.LoadFile("../../tiles/maps/keepers_forest/keepers_1.tmx")
@@ -82,5 +120,27 @@ func NewKeepersForest1() *Scene {
 			}
 		}
 	}
+	result.loadObjects()
+
+	//create player object and set camera target
+	CreateEntityLayer(NewMori, 0, 50, 50)
+	for _, e := range EntityList {
+		fmt.Printf("Type: %T\n", e)
+		if player, ok := e.(*Player); ok {
+			g.Camera.SetTarget(player)
+		}
+	}
 	return &result
+}
+
+func (s *Scene) loadObjects() {
+
+	//fmt.Println(gameMap.ImageLayers[0])
+
+	for _, groups := range s.tileMap.ObjectGroups {
+		for _, object := range groups.Objects {
+			CreateEntityLayer(NewWall, 0, object.X, object.Y)
+		}
+	}
+
 }

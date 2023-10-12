@@ -1,6 +1,8 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -8,20 +10,52 @@ import (
 var screenWidth = 960
 var screenHeight = 530
 var EntityList []Entity
+var EntityMap map[int]Entity
 var globalUIDCounter = 0
 
 type Game struct {
 	World  *ebiten.Image
 	Camera Camera
-	Level  *Scene
+	SM     *SceneManager
 	M      []map[uint32]*ebiten.Image
+	PD     *PlayerData
 }
 
 func CreateEntityLayer(entityC EntityConstructor, layer int, x, y float64) {
-
 	result := entityC(x, y, globalUIDCounter)
-	globalUIDCounter++
 	EntityList = append(EntityList, result)
+	EntityMap[result.getUID()] = result
+	globalUIDCounter++
+}
+
+func InstanceExists(UID int) bool {
+	_, ok := EntityMap[UID]
+	return ok
+}
+
+// searches for entity and deletes returns true if successful
+func DestroyEntity(UID int) bool {
+
+	result := false
+
+	if !InstanceExists(UID) {
+		return result
+	}
+	result = true
+	fmt.Println("TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEST")
+	fmt.Println(len(EntityMap), len(EntityList))
+	delete(EntityMap, UID)
+	for i, entity := range EntityList {
+		if entity.getUID() == UID && i != len(EntityList)-1 {
+			EntityList = append(EntityList[:i], EntityList[i+1])
+		} else if entity.getUID() == UID {
+			EntityList = EntityList[:len(EntityList)-1]
+		}
+
+	}
+	fmt.Println("TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEST")
+	fmt.Println(len(EntityMap), len(EntityList))
+	return result
 }
 
 func (g *Game) Update() error {
@@ -29,15 +63,12 @@ func (g *Game) Update() error {
 		entity.Step()
 	}
 	g.Camera.Target()
-	//fmt.Println(ebiten.CurrentTPS())
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, "Hello, World")
-	//g.World.Fill(color.RGBA{149, 209, 197, 0xff})
-
-	g.Level.DrawTiles(g)
+	g.SM.currentScene.DrawTiles(g)
 
 	//worldX, worldY := g.camera.ScreenToWorld(ebiten.CursorPosition())
 	for _, entity := range EntityList {

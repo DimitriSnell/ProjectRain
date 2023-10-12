@@ -64,12 +64,15 @@ func (c *Camera) ScreenToWorld(posX, posY int) (float64, float64) {
 }
 
 func (c *Camera) Target() {
-	x, y := c.target.GetPosition()
-	currentSprite := c.target.GetCurrentSprite()
-	adjustedX := x - float64(currentSprite.originX)
-	adjustedY := y - float64(currentSprite.originY)
-	c.Position[0] = math.Floor(adjustedX + float64(currentSprite.ImgWidth/2) - (c.ViewPort[0] / 2))
-	c.Position[1] = math.Floor(adjustedY + float64(currentSprite.ImgHeight)/2 - (c.ViewPort[1] / 2))
+	if c.target != nil && InstanceExists(c.target.getUID()) {
+		x, y := c.target.GetPosition()
+		currentSprite := c.target.GetCurrentSprite()
+		adjustedX := x - float64(currentSprite.originX)
+		adjustedY := y - float64(currentSprite.originY)
+		c.Position[0] = math.Floor(adjustedX + float64(currentSprite.ImgWidth/2) - (c.ViewPort[0] / 2))
+		c.Position[1] = math.Floor(adjustedY + float64(currentSprite.ImgHeight)/2 - (c.ViewPort[1] / 2))
+	}
+
 }
 
 func (c *Camera) SetTarget(p *Player) {

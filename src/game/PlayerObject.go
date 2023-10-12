@@ -45,10 +45,6 @@ type Player struct {
 }
 
 func NewPlayer(x float64, y float64, UID int) Entity {
-	//img, _, err := ebitenutil.NewImageFromFile("../assets/mori_jump1.png")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 	keys := []ebiten.Key{}
 	var ms float64 = 2
 	s := NewSprite("../../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
@@ -66,7 +62,9 @@ func NewMori(x float64, y float64, UID int) Entity {
 	s := NewSprite("../../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
 	m := make(map[string]*Sprite)
 	m[s.Name] = s
-	s2 := NewSprite("../../assets/mori_swing_1_strip10.png", 10, 4, 128, 128, "mori_ability_1", f64.Vec2{64, 54}, f64.Vec2{71, 80}, 32, 32)
+	s2 := NewSprite("../../assets/mori_swing_1_strip10.png", 10, 4, 128, 128, "mori_ability_1", f64.Vec2{63, 55}, f64.Vec2{72, 80}, 32, 32)
+	m[s2.Name] = s2
+	s2 = NewSprite("../../assets/mori_run_sheet.png", 6, 8, 64, 64, "mori_run", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
 	m[s2.Name] = s2
 	//m[] = s
 	gv := .2
@@ -75,9 +73,6 @@ func NewMori(x float64, y float64, UID int) Entity {
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
-	//op := &ebiten.DrawImageOptions{}
-	//op.GeoM.Translate(math.Floor(p.translateX), math.Floor(p.translateY))
-	//screen.DrawImage(p.sprite, op)
 	p.currentSprite.Draw(screen, p.translateX, p.translateY)
 }
 
@@ -109,6 +104,9 @@ func (p *Player) Step() {
 		}
 		targetSpeed := float64(rightdir+leftdir) * p.moveSpeed
 		p.hspeed = targetSpeed
+		if p.hspeed > 0 || p.hspeed < 0 {
+			p.currentSprite = p.Sprites["mori_run"]
+		}
 	case ABILITY1:
 		p.hspeed = 0
 		p.currentSprite = p.Sprites["mori_ability_1"]
@@ -119,7 +117,7 @@ func (p *Player) Step() {
 	}
 
 	p.vspeed += float64(p.gravity)
-	fmt.Println(p.dir)
+	//fmt.Println(p.dir)
 	//collision and vertical/horizontal movement
 	p.playerWallCollision()
 	if p.dir > 0 {
@@ -154,7 +152,7 @@ func (p *Player) getVspeed() float64 {
 func (p *Player) playerWallCollision() {
 	if (placeMeeting(p, p.translateX+p.hspeed, p.translateY, reflect.TypeOf(&Wall{}))) {
 		fmt.Println("TEST COLLISION")
-		for !placeMeeting(p, p.translateX+float64(util.Sign(p.vspeed)), p.translateY, reflect.TypeOf(&Wall{})) {
+		for !placeMeeting(p, p.translateX+float64(util.Sign(p.hspeed)), p.translateY, reflect.TypeOf(&Wall{})) {
 			p.translateX += float64(util.Sign(p.hspeed))
 		}
 		p.hspeed = 0
