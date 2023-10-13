@@ -5,6 +5,10 @@ import (
 	"image/color"
 	"log"
 
+	util "github.com/DimitriSnell/goTest/src/utils"
+	"github.com/ebitenui/ebitenui"
+	"github.com/ebitenui/ebitenui/image"
+	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/lafriks/go-tiled"
@@ -13,6 +17,7 @@ import (
 type Scene struct {
 	tileMap   *tiled.Map
 	imageMaps []map[uint32]*ebiten.Image
+	ui        *ebitenui.UI
 }
 
 func (s *Scene) GetTileMap() *tiled.Map {
@@ -39,9 +44,19 @@ func (s *Scene) DrawTiles(g *Game) {
 		}
 	}
 
+	if s.ui != nil {
+		s.ui.Draw(g.World)
+	}
 }
 
-func NewMainMenu1() *Scene {
+func (s *Scene) step() {
+	if s.ui != nil {
+		s.ui.Update()
+	}
+
+}
+
+func NewMainMenu1(g *Game) *Scene {
 	result := Scene{}
 	result.imageMaps = make([]map[uint32]*ebiten.Image, 0)
 	gameMap, err := tiled.LoadFile("../../tiles/maps/main_menu_1.tmx")
@@ -71,10 +86,30 @@ func NewMainMenu1() *Scene {
 			}
 		}
 	}
+
+	//create UI
+	buttonImage, _ := util.LoadButtonImage()
+	rootContainer := widget.NewContainer(
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0x13, 0x1a, 0x22, 0xff})),
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+	)
+	button := widget.NewButton(
+		widget.ButtonOpts.Image(buttonImage),
+
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			println("button clicked")
+			g.EM.Publish("SceneTransition", KEEPERSFOREST1)
+		}),
+	)
+	rootContainer.AddChild(button)
+	result.ui = &ebitenui.UI{Container: rootContainer}
+	//face, _ := loadFont(20)
+	AssetsLoaded = true
 	return &result
 }
 
 func NewKeepersForest1(g *Game) *Scene {
+	AssetsLoaded = false
 	result := Scene{}
 	result.imageMaps = make([]map[uint32]*ebiten.Image, 0)
 	gameMap, err := tiled.LoadFile("../../tiles/maps/keepers_forest/keepers_1.tmx")
@@ -130,6 +165,7 @@ func NewKeepersForest1(g *Game) *Scene {
 			g.Camera.SetTarget(player)
 		}
 	}
+	AssetsLoaded = false
 	return &result
 }
 
@@ -142,5 +178,9 @@ func (s *Scene) loadObjects() {
 			CreateEntityLayer(NewWall, 0, object.X, object.Y)
 		}
 	}
+
+}
+
+func createPlayerObject() {
 
 }

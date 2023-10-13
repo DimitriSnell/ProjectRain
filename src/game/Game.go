@@ -7,8 +7,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+var AssetsLoaded = false
 var screenWidth = 960
-var screenHeight = 530
+var screenHeight = 540
 var EntityList []Entity
 var EntityMap map[int]Entity
 var globalUIDCounter = 0
@@ -19,6 +20,7 @@ type Game struct {
 	SM     *SceneManager
 	M      []map[uint32]*ebiten.Image
 	PD     *PlayerData
+	EM     *EventManager
 }
 
 func CreateEntityLayer(entityC EntityConstructor, layer int, x, y float64) {
@@ -59,23 +61,32 @@ func DestroyEntity(UID int) bool {
 }
 
 func (g *Game) Update() error {
-	for _, entity := range EntityList {
-		entity.Step()
+	if AssetsLoaded {
+		for _, entity := range EntityList {
+			entity.Step()
+		}
+		g.Camera.Target()
+		g.SM.currentScene.step()
+	} else {
+		fmt.Println("UPDATING WITHOUT ASSETS LOADED")
 	}
-	g.Camera.Target()
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, "Hello, World")
-	g.SM.currentScene.DrawTiles(g)
+	if AssetsLoaded {
+		g.SM.currentScene.DrawTiles(g)
 
-	//worldX, worldY := g.camera.ScreenToWorld(ebiten.CursorPosition())
-	for _, entity := range EntityList {
-		entity.Draw(g.World)
+		//worldX, worldY := g.camera.ScreenToWorld(ebiten.CursorPosition())
+		for _, entity := range EntityList {
+			entity.Draw(g.World)
+		}
+		g.Camera.Render(g.World, screen)
+		//ebitenutil.DebugPrint(screen, ebiten.CurrentTPS())
 	}
-	g.Camera.Render(g.World, screen)
-	//ebitenutil.DebugPrint(screen, ebiten.CurrentTPS())
+
 	g.World.Clear()
 }
 
