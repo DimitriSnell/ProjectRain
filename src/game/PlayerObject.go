@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 
 	util "github.com/DimitriSnell/goTest/src/utils"
@@ -30,7 +31,6 @@ type Player struct {
 	translateX float64
 	translateY float64
 	//sprite     *ebiten.Image
-	keys          []ebiten.Key
 	hspeed        float64
 	vspeed        float64
 	dir           int
@@ -45,31 +45,41 @@ type Player struct {
 }
 
 func NewPlayer(x float64, y float64, UID int) Entity {
-	keys := []ebiten.Key{}
 	var ms float64 = 2
 	s := NewSprite("../../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
 	m := make(map[string]*Sprite)
 	m[s.Name] = s
 	//m[] = s
 	gv := .2
-	p := Player{x, y, keys, 0, 0, 0, ms, s, m, 0, 0, float32(gv), UID, FREE}
+	p := Player{x, y, 0, 0, 0, ms, s, m, 0, 0, float32(gv), UID, FREE}
 	return &p
 }
 
 func NewMori(x float64, y float64, UID int) Entity {
-	keys := []ebiten.Key{}
-	var ms float64 = 2
-	s := NewSprite("../../assets/mori_idle_2.png", 5, 8, 64, 64, "mori_idle", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
+	var ms float64 = 1.5
+	s := NewSprite("../../assets/mori_idle_2.png", 5, 8, 64, 64, "idle_sprite", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
 	m := make(map[string]*Sprite)
 	m[s.Name] = s
 	s2 := NewSprite("../../assets/mori_swing_1_strip10.png", 10, 4, 128, 128, "mori_ability_1", f64.Vec2{63, 55}, f64.Vec2{72, 80}, 32, 32)
 	m[s2.Name] = s2
-	s2 = NewSprite("../../assets/mori_run_sheet.png", 6, 8, 64, 64, "mori_run", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
+	s2 = NewSprite("../../assets/mori_run_sheet.png", 6, 8, 64, 64, "walk_sprite", f64.Vec2{31, 23}, f64.Vec2{40, 48}, 0, 0)
 	m[s2.Name] = s2
 	//m[] = s
-	gv := .2
-	p := Player{x, y, keys, 0, 0, 0, ms, s, m, 0, 0, float32(gv), UID, FREE}
+	gv := .3
+	p := Player{x, y, 0, 0, 0, ms, s, m, 0, 0, float32(gv), UID, FREE}
 	return &p
+}
+
+func NewLui(x, y float64, UID int) Entity {
+	var ms float64 = 2.3
+	s := NewSprite("../../assets/Lui_Sprites/lui_idle.png", 1, 1, 64, 32, "idle_sprite", f64.Vec2{8, 7}, f64.Vec2{18, 29}, 2, 2)
+	m := make(map[string]*Sprite)
+	gv := .3
+	s2 := NewSprite("../../assets/Lui_Sprites/lui_walk.png", 6, 8, 32, 32, "walk_sprite", f64.Vec2{6, 3}, f64.Vec2{17, 27}, 0, 0)
+	m[s.Name] = s
+	m[s2.Name] = s2
+	P := Player{x, y, 0, 0, 0, ms, s, m, 0, 0, float32(gv), UID, FREE}
+	return &P
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
@@ -77,6 +87,7 @@ func (p *Player) Draw(screen *ebiten.Image) {
 }
 
 func (p *Player) Step() {
+
 	//p.currentSprite = p.Sprites["mori_idle"]
 	p.currentSprite.Step()
 	//p.keys = inpututil.AppendPressedKeys(p.keys)
@@ -89,7 +100,7 @@ func (p *Player) Step() {
 	leftdir := 0
 	switch p.STATE {
 	case FREE:
-		p.currentSprite = p.Sprites["mori_idle"]
+		p.currentSprite = p.Sprites["idle_sprite"]
 		if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
 			rightdir = 1
 		}
@@ -105,11 +116,11 @@ func (p *Player) Step() {
 		targetSpeed := float64(rightdir+leftdir) * p.moveSpeed
 		p.hspeed = targetSpeed
 		if p.hspeed > 0 || p.hspeed < 0 {
-			p.currentSprite = p.Sprites["mori_run"]
+			p.currentSprite = p.Sprites["walk_sprite"]
 		}
 	case ABILITY1:
 		p.hspeed = 0
-		p.currentSprite = p.Sprites["mori_ability_1"]
+		//p.currentSprite = p.Sprites["mori_ability_1"]
 		if p.currentSprite.spriteIndex >= p.currentSprite.numOfFrames-1 {
 			p.currentSprite.count = 0
 			p.STATE = FREE
@@ -117,6 +128,7 @@ func (p *Player) Step() {
 	}
 
 	p.vspeed += float64(p.gravity)
+
 	//fmt.Println(p.dir)
 	//collision and vertical/horizontal movement
 	p.playerWallCollision()
@@ -126,11 +138,8 @@ func (p *Player) Step() {
 
 		p.currentSprite.imageXScale = -1
 	}
-	p.translateX += p.hspeed
 	p.translateY += p.vspeed
-	//p.hspeed = 0
-	//rightdir = 0
-	//leftdir = 0
+	p.translateY = math.Floor(p.translateY)
 }
 
 func (p *Player) GetPosition() (x float64, y float64) {
@@ -157,6 +166,8 @@ func (p *Player) playerWallCollision() {
 		}
 		p.hspeed = 0
 	}
+
+	p.translateX += p.hspeed
 
 	if (placeMeeting(p, p.translateX, p.translateY+p.vspeed, reflect.TypeOf(&Wall{}))) {
 		//fmt.Println("TEST COLLISION")

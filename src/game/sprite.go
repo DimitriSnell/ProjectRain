@@ -85,22 +85,23 @@ func (s *Sprite) Step() {
 
 func (s *Sprite) Draw(img *ebiten.Image, x, y float64) {
 	op := &ebiten.DrawImageOptions{}
-	adjustedX := x - float64(s.originX)
-	adjustedY := y - float64(s.originY)
-	op.GeoM.Translate(math.Floor(adjustedX)*float64(s.imageXScale), math.Floor(adjustedY))
+	op.Filter = ebiten.FilterNearest
+	adjustedX := math.Floor(x - float64(s.originX))
+	adjustedY := math.Floor(y - float64(s.originY))
+	op.GeoM.Translate(adjustedX*float64(s.imageXScale), adjustedY)
 	op.GeoM.Scale(float64(s.imageXScale), 1)
 	if s.imageXScale == -1 {
-		op.GeoM.Translate(float64(s.ImgWidth)+s.boundingBox.max[0]-s.boundingBox.min[0]-2, 0)
+		op.GeoM.Translate(math.Round(s.boundingBox.max[0]+s.boundingBox.min[0]), 0)
 	}
 	//op.GeoM.Translate(500, 0)
 	i := s.spriteIndex
 	//fmt.Println(s.spriteIndex)
 	//fmt.Println(i)
 	sx, sy := i*int(s.ImgWidth), 0
-	minPointX := math.Floor(adjustedX) + s.boundingBox.min[0]
-	minPointY := math.Floor(adjustedY) + s.boundingBox.min[1]
-	maxPointX := math.Floor(adjustedX) + s.boundingBox.max[0]
-	maxPointY := math.Floor(adjustedY) + s.boundingBox.max[1]
+	minPointX := adjustedX + s.boundingBox.min[0]
+	minPointY := adjustedY + s.boundingBox.min[1]
+	maxPointX := adjustedX + s.boundingBox.max[0]
+	maxPointY := adjustedY + s.boundingBox.max[1]
 	//fmt.Println(x, y)
 	//fmt.Println(s.boundingBox.min, s.boundingBox.max)
 	//fmt.Println(minPointX, minPointY, maxPointX, maxPointY)
@@ -114,5 +115,6 @@ func (s *Sprite) Draw(img *ebiten.Image, x, y float64) {
 	vector.StrokeLine(img, float32(minPointX), float32(minPointY), float32(minPointX), float32(maxPointY), 1, color.RGBA{255, 0, 0, 0xff}, false)
 	vector.StrokeLine(img, float32(minPointX), float32(maxPointY), float32(maxPointX), float32(maxPointY), 1, color.RGBA{255, 0, 0, 0xff}, false)
 	vector.StrokeLine(img, float32(maxPointX), float32(minPointY), float32(maxPointX), float32(maxPointY), 1, color.RGBA{255, 0, 0, 0xff}, false)
+
 	//img.DrawImage(s.img.SubImage(image.Rect(sx, sy, sx+64, sy+64)).(*ebiten.Image), op)
 }

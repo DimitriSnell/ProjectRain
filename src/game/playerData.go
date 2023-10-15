@@ -3,12 +3,12 @@ package game
 type CLASS int
 
 const (
-	MORI PLAYERSTATE = iota
+	MORI CLASS = iota
 	LUI
 )
 
 type PlayerData struct {
-	Class CLASS
+	class CLASS
 	level int
 }
 
@@ -17,5 +17,5 @@ func NewPlayerData() *PlayerData {
 }
 
 func (pd *PlayerData) SetPlayerClass(c CLASS) {
-	pd.Class = pd.Class
+	pd.class = pd.class
 }

@@ -46,10 +46,9 @@ func (c *Camera) worldMatrix() ebiten.GeoM {
 }
 
 func (c *Camera) Render(world, screen *ebiten.Image) {
-
-	screen.DrawImage(world, &ebiten.DrawImageOptions{
-		GeoM: c.worldMatrix(),
-	})
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM = c.worldMatrix()
+	screen.DrawImage(world, op)
 }
 
 func (c *Camera) ScreenToWorld(posX, posY int) (float64, float64) {
@@ -67,12 +66,22 @@ func (c *Camera) Target() {
 	if c.target != nil && InstanceExists(c.target.getUID()) {
 		x, y := c.target.GetPosition()
 		currentSprite := c.target.GetCurrentSprite()
-		adjustedX := x - float64(currentSprite.originX)
-		adjustedY := y - float64(currentSprite.originY)
-		c.Position[0] = math.Floor(adjustedX + float64(currentSprite.ImgWidth/2) - (c.ViewPort[0] / 2))
-		c.Position[1] = math.Floor(adjustedY + float64(currentSprite.ImgHeight)/2 - (c.ViewPort[1] / 2))
-	}
+		adjustedX := math.Floor(x - float64(currentSprite.originX))
+		adjustedY := math.Floor(y - float64(currentSprite.originY))
 
+		targetX := currentSprite.boundingBox.max[0]
+
+		targetY := currentSprite.boundingBox.max[1]
+		targetY += adjustedY
+		targetX += adjustedX
+
+		TargetPositionX := (targetX - (c.ViewPort[0] / 2))
+		TargetPositionY := (targetY - (c.ViewPort[1] / 2))
+		//c.Position[0] = math.Floor(TargetPositionX)
+		//c.Position[1] = math.Floor(TargetPositionY)
+		c.Position[0] += math.Floor(.5 * (TargetPositionX - c.Position[0]))
+		c.Position[1] += math.Floor(.5 * (TargetPositionY - c.Position[1]))
+	}
 }
 
 func (c *Camera) SetTarget(p *Player) {
